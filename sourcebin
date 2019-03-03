@@ -1,0 +1,36 @@
+#!/usr/local/bin/python3
+import requests
+import argparse
+import sys
+
+def upload(data,secret,expiration):
+    r = requests.post("http://sourcebin.tk/save", data={"expiration":expiration,"text":data,"secret":secret})
+    print(expiration)
+    print(secret)
+    return r.json()['url']
+
+def read_stdin():
+    parser = argparse.ArgumentParser(description='A CLI tool for submitting pastes into sourcebin.tk or your local sourcebin server.')
+    parser.add_argument("-s","--secret",help="Secret key for encrypted messages")
+    parser.add_argument("-e","--expiration",help="Expiration time for your paste[year,month,day,hour,minute]")
+    parser.add_argument('infile',
+                    default=sys.stdin,
+                    type=argparse.FileType('r'),
+                    nargs='?')
+    args = parser.parse_args()
+    inputs = {}
+    data = args.infile.read()
+
+    inputs["data"] = data[:-1]
+    inputs["expiration"] = args.expiration
+    inputs["secret"] = args.secret
+
+    return inputs
+
+def main():
+    inputs = read_stdin()
+    url = upload(inputs["data"],inputs["secret"],inputs["expiration"])
+    print(url)
+
+if __name__ == '__main__':
+    main()
